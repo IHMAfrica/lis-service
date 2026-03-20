@@ -1,0 +1,50 @@
+package zm.gov.moh.lisservice.config;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import reactor.kafka.sender.KafkaSender;
+import reactor.kafka.sender.SenderOptions;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Configuration
+@Slf4j
+@RequiredArgsConstructor
+public class KafkaConfig {
+    private final ConfigProperties configProperties;
+
+    @Bean
+    public SenderOptions<String, String> senderOptions() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, configProperties.getBootstrapServers());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 280000);
+        props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 0);
+        props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 80000);
+        props.put(ProducerConfig.ACKS_CONFIG, "1");
+        props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE); // Let delivery.timeout handle it
+        props.put("sasl.jaas.config", configProperties.getJaasConfig());
+        props.put("security.protocol", "SASL_PLAINTEXT");
+        props.put("sasl.mechanism", "SCRAM-SHA-256");
+
+        props.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 500);
+
+        return SenderOptions.create(props);
+    }
+
+    @Bean
+    public KafkaSender<String, String> kafkaSender(SenderOptions<String, String> senderOptions) {
+        return KafkaSender.create(senderOptions);
+    }
+}

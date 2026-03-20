@@ -1,0 +1,14 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lis-service-chart.fullname" . }}-pghba-config
+  labels:
+    {{- include "lis-service-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+data:
+  pg_hba-custom.conf: |
+    # Debezium replication access
+    host    replication     debezium_user   10.0.0.0/16             md5
+    host    all             debezium_user   10.0.0.0/16             md5
+{{- end }}

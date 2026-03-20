@@ -1,0 +1,9 @@
+defaultNamespace: hie-gateway
+helm:
+  releaseName: hie-gateway
+  chart: ./hie-gateway-chart
+  values:
+    image:
+      repository: ghcr.io/ihmafrica/hie-gateway
+      pullSecrets:
+        - name: ghcr-login

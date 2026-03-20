@@ -1,0 +1,107 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lis-service-chart.fullname" . }}-postgresql-init
+  labels:
+    {{- include "lis-service-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+data:
+  01-setup-configs.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Setting up PostgreSQL configuration files..."
+
+    # Append custom PostgreSQL settings
+    if [ -f /docker-entrypoint-initdb.d/postgresql-custom.conf ]; then
+      echo "" >> "$PGDATA/postgresql.conf"
+      echo "# Custom configurations" >> "$PGDATA/postgresql.conf"
+      cat /docker-entrypoint-initdb.d/postgresql-custom.conf >> "$PGDATA/postgresql.conf"
+      echo "Custom PostgreSQL configuration applied."
+    fi
+
+    # Append custom pg_hba settings
+    if [ -f /docker-entrypoint-initdb.d/pg_hba-custom.conf ]; then
+      echo "" >> "$PGDATA/pg_hba.conf"
+      echo "# Custom HBA rules" >> "$PGDATA/pg_hba.conf"
+      cat /docker-entrypoint-initdb.d/pg_hba-custom.conf >> "$PGDATA/pg_hba.conf"
+      echo "Custom pg_hba configuration applied."
+    fi
+
+  02-create-debezium-user.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Creating debezium_user role..."
+
+    # Check if DEBEZIUM_PASSWORD is set
+    if [ -z "$DEBEZIUM_PASSWORD" ]; then
+      echo "WARNING: DEBEZIUM_PASSWORD not set, skipping debezium user creation"
+      exit 0
+    fi
+
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+      DO \$\$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'debezium_user') THEN
+          CREATE ROLE debezium_user WITH REPLICATION LOGIN PASSWORD '${DEBEZIUM_PASSWORD}';
+
+          GRANT USAGE ON SCHEMA geo TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA geo TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA geo GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA facility TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA facility TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA facility GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA lookup TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA lookup TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA lookup GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA client TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA client TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA client GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA scheme TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA scheme TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA scheme GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA pricing TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA pricing TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA pricing GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA billing TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA billing TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA billing GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA payment TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA payment TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA payment GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA audit TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA audit TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA config TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA config TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA config GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA eligibility TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA eligibility TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA eligibility GRANT SELECT ON TABLES TO debezium_user;
+
+          GRANT USAGE ON SCHEMA notify TO debezium_user;
+          GRANT SELECT ON ALL TABLES IN SCHEMA notify TO debezium_user;
+          ALTER DEFAULT PRIVILEGES IN SCHEMA notify GRANT SELECT ON TABLES TO debezium_user;
+
+          RAISE NOTICE 'Debezium user created successfully!';
+        ELSE
+          RAISE NOTICE 'Debezium user already exists, skipping creation.';
+        END IF;
+      END
+      \$\$;
+    EOSQL
+
+    echo "Debezium setup complete!"
+    {{- end }}

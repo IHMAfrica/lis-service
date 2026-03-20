@@ -1,0 +1,15 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lis-service-chart.fullname" . }}-postgresql-config
+  labels:
+    {{- include "lis-service-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+data:
+  postgresql-custom.conf: |
+    # Logical replication settings for Debezium
+    wal_level = logical
+    max_wal_senders = 10
+    max_replication_slots = 10
+{{- end }}
