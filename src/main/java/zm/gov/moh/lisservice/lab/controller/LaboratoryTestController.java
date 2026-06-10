@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -41,7 +40,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<LaboratoryTestDTO.LaboratoryTestResponse>> create(
             @Valid @RequestBody LaboratoryTestDTO.CreateLaboratoryTest request
     ) {
@@ -57,7 +55,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<PagedResponse<LaboratoryTestDTO.LaboratoryTestResponse>>> findAll(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
@@ -73,7 +70,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/laboratory/{laboratoryId}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<PagedResponse<LaboratoryTestDTO.LaboratoryTestResponse>>> findByLaboratoryId(
             @PathVariable Short laboratoryId,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -92,7 +88,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<LaboratoryTestDTO.LaboratoryTestResponse>> findById(@PathVariable UUID id) {
         return laboratoryTestService.findById(id).map(ResponseEntity::ok);
     }
@@ -109,7 +104,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<LaboratoryTestDTO.LaboratoryTestResponse>> update(
             @PathVariable UUID id,
             @Valid @RequestBody LaboratoryTestDTO.UpdateLaboratoryTest request
@@ -126,7 +120,6 @@ public class LaboratoryTestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<Void>> delete(@PathVariable UUID id) {
         return laboratoryTestService.delete(id).then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }

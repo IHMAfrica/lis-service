@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -41,7 +40,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>> create(
             @Valid @RequestBody FacilityLaboratoryMapDTO.CreateFacilityLaboratoryMap request
     ) {
@@ -57,7 +55,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<PagedResponse<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>>> findAll(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size
@@ -73,7 +70,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/facility/{facilityId}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<PagedResponse<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>>> findByFacilityId(
             @PathVariable Long facilityId,
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -92,7 +88,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN', 'ROLE_HIE_MANAGER_USER')")
     public Mono<ResponseEntity<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>> findById(@PathVariable UUID id) {
         return facilityLaboratoryMapService.findById(id).map(ResponseEntity::ok);
     }
@@ -109,7 +104,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>> update(
             @PathVariable UUID id,
             @Valid @RequestBody FacilityLaboratoryMapDTO.UpdateFacilityLaboratoryMap request
@@ -126,7 +120,6 @@ public class FacilityLaboratoryMapController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_HIE_MANAGER_ADMIN')")
     public Mono<ResponseEntity<Void>> delete(@PathVariable UUID id) {
         return facilityLaboratoryMapService.delete(id).then(Mono.just(ResponseEntity.noContent().<Void>build()));
     }
