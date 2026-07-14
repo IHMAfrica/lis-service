@@ -1,0 +1,167 @@
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: lis
+  codec:
+    max-in-memory-size: 10MB
+  jackson:
+    date-format: yyyy-MM-dd
+    property-naming-strategy: LOWER_CAMEL_CASE
+    default-property-inclusion: NON_NULL
+    deserialization:
+      fail-on-unknown-properties: false
+      fail-on-null-for-primitives: false
+    time-zone: UTC
+  sql:
+    init:
+      mode: never
+  kafka:
+    # Logical topic names shared across environments; connection/security
+    # settings are supplied per profile below. HL7 v2.5 text is the payload
+    # on every topic.
+    topic:
+      # Outbound (produced via the outbox relay)
+      lab-orders: lab-orders
+      lab-result-acks: lab-result-ack
+      # Inbound (consumed)
+      lab-orders-ack: lab-orders-ack
+      lab-results: lab-results
+      # Dead-letter for unroutable / poison messages
+      dlq: lis.dlq
+logging:
+  pattern:
+    console: "[%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n]"
+  level:
+    root: error
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.75, 0.95, 0.99
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:9000
+          issuer-uri: http://localhost:9000
+  r2dbc:
+    username: did_user
+    password: did_password
+    url: r2dbc:postgresql://localhost:5432/lis_db
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      validation-query: SELECT 1
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: redis_password
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      lettuce:
+        pool:
+          min-idle: 2
+          max-idle: 8
+          max-active: 16
+  flyway:
+    url: jdbc:postgresql://localhost:5432/lis_db
+    user: did_user
+    password: did_password
+    locations: classpath:db/migration
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      security.protocol: SASL_PLAINTEXT
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="kafka-user" password="password";
+server:
+  port: 8089
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KC_BASE_URL}/realms/${KC_REALM}/protocol/openid-connect/certs
+          issuer-uri: ${KC_BASE_URL}/realms/${KC_REALM}
+  r2dbc:
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    pool:
+      initial-size: ${DB_POOL_INITIAL_SIZE}
+      max-size: ${DB_POOL_MAX_SIZE}
+      max-idle-time: ${DB_POOL_MAX_IDLE_TIME}
+      validation-query: SELECT 1
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      lettuce:
+        pool:
+          min-idle: 2
+          max-idle: 8
+          max-active: 16
+  flyway:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+    locations: classpath:db/migration
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM}
+      sasl.jaas.config: ${KAFKA_JAAS_CONFIG}
+    topic:
+      lab-orders: ${LAB_ORDERS_TOPIC:lab-orders}
+      lab-result-acks: ${LAB_RESULT_ACKS_TOPIC:lab-result-ack}
+      lab-orders-ack: ${LAB_ORDERS_ACK_TOPIC:lab-orders-ack}
+      lab-results: ${LAB_RESULTS_TOPIC:lab-results}
+      dlq: ${DLQ_TOPIC:lis.dlq}
+server:
+  port: ${SERVER_PORT}

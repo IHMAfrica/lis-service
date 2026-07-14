@@ -1,0 +1,268 @@
+# Default values for lis-chart.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/moh-zm/lis
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Spring profile the application runs with. `prod` binds all connection settings
+# from the environment (see `config` / `secrets` below).
+springProfile: prod
+
+# -----------------------------------------------------------------------------
+# Application (LIS) container
+# -----------------------------------------------------------------------------
+# Ports the container listens on. `http` serves the REST API + actuator; `grpc`
+# is the inbound spring-grpc server that receives lab orders / DISA logs.
+ports:
+  http: 8089
+  grpc: 9090
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+# Hardened defaults — the app runs as a non-root user on a read-only root fs.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  # Port the Service exposes for the REST API (targets the container `http` port).
+  port: 80
+  # Port the Service exposes for the inbound gRPC server.
+  grpcPort: 9090
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: lis.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  hostnames:
+    - lis.local
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+# Sensible production defaults; tune per environment.
+resources:
+  limits:
+    cpu: "1"
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+# Probes hit Spring Boot Actuator health groups. `startupProbe` gives the JVM +
+# Flyway migrations time to come up before liveness/readiness begin.
+startupProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: http
+  failureThreshold: 30
+  periodSeconds: 5
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 15
+  timeoutSeconds: 3
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 75
+  # targetMemoryUtilizationPercentage: 80
+
+# The app writes only to /tmp (read-only root fs); an emptyDir covers it. Add more
+# via `volumes` / `volumeMounts`.
+volumes: []
+volumeMounts: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# -----------------------------------------------------------------------------
+# Non-secret application configuration (rendered into a ConfigMap and injected
+# via envFrom). Connection hosts for the bundled Postgres/Redis are derived
+# automatically when those subsystems are enabled.
+# -----------------------------------------------------------------------------
+config:
+  # Expose the liveness/readiness health groups the probes rely on.
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+  # Keycloak (OAuth2 resource server)
+  KC_BASE_URL: "http://keycloak"
+  KC_REALM: "lis"
+  # Database connection pool
+  DB_POOL_INITIAL_SIZE: "5"
+  DB_POOL_MAX_SIZE: "20"
+  DB_POOL_MAX_IDLE_TIME: "30m"
+  # Inbound gRPC server bind address (0.0.0.0 so it is reachable in-cluster)
+  SPRING_GRPC_SERVER_ADDRESS: "0.0.0.0"
+  # Kafka logical topic names (payload is HL7 v2.5 text on every topic)
+  LAB_ORDERS_TOPIC: "lab-orders"
+  LAB_RESULT_ACKS_TOPIC: "lab-result-ack"
+  LAB_ORDERS_ACK_TOPIC: "lab-orders-ack"
+  LAB_RESULTS_TOPIC: "lab-results"
+  DLQ_TOPIC: "lis.dlq"
+
+# Extra environment variables (list of name/value or name/valueFrom entries)
+# appended verbatim to the container.
+extraEnv: []
+
+# -----------------------------------------------------------------------------
+# Secrets. By default a Secret is created from the values below. To supply your
+# own Secret instead, set `secrets.existingSecret` to its name; it must contain
+# the same keys.
+# -----------------------------------------------------------------------------
+secrets:
+  # Pre-existing Secret holding ALL of the application's environment variables.
+  # When set (the default), the app container sources its entire environment from
+  # this Secret via `envFrom` and the chart does NOT render its own ConfigMap or
+  # Secret. The bundled Postgres/Redis also read their passwords (DB_PASSWORD /
+  # REDIS_PASSWORD keys) from it, so it must contain every key the app expects
+  # (SPRING_PROFILES_ACTIVE, SERVER_PORT, SPRING_GRPC_SERVER_PORT, DB_*, REDIS_*,
+  # KAFKA_*, LIS_GRPC_MESSAGE_RECEIVER_*, KC_*, ...).
+  # Set to "" to instead have the chart generate a ConfigMap + Secret from the
+  # `config` and `secrets.data` values below (self-contained / dev mode).
+  existingSecret: "lis-credentials"
+  # Keys created when existingSecret is empty. Passwords for the bundled
+  # Postgres/Redis are taken from DB_PASSWORD / REDIS_PASSWORD here.
+  data:
+    DB_PASSWORD: "change-me-db"
+    REDIS_PASSWORD: "change-me-redis"
+    # Kafka SASL/JAAS (external Kafka)
+    KAFKA_JAAS_CONFIG: 'org.apache.kafka.common.security.scram.ScramLoginModule required username="kafka-user" password="change-me";'
+
+# -----------------------------------------------------------------------------
+# Downstream gRPC receiver (MessageReceiverService) the app forwards results to.
+# -----------------------------------------------------------------------------
+messageReceiver:
+  host: message-receiver
+  port: 9091
+
+# -----------------------------------------------------------------------------
+# External Kafka (NOT deployed by this chart — runs externally).
+# -----------------------------------------------------------------------------
+kafka:
+  bootstrapServers: "kafka-bootstrap:9092"
+  securityProtocol: "SASL_PLAINTEXT"
+  saslMechanism: "SCRAM-SHA-256"
+
+# -----------------------------------------------------------------------------
+# Database. When postgresql.enabled=true, a bundled PostgreSQL StatefulSet is
+# deployed with a persistent volume and the app is wired to it automatically.
+# Set postgresql.enabled=false and fill in `externalDatabase` to use a managed DB.
+# -----------------------------------------------------------------------------
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    database: lis_db
+    username: lis_user
+    # Password comes from the app Secret's DB_PASSWORD key (single source of truth).
+  service:
+    port: 5432
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# Used only when postgresql.enabled=false.
+externalDatabase:
+  host: ""
+  port: 5432
+  database: lis_db
+  username: lis_user
+
+# -----------------------------------------------------------------------------
+# Redis. When redis.enabled=true, a bundled Redis Deployment is used strictly as
+# a cache / pub-sub broker — persistence is DISABLED (RDB + AOF off), so a restart
+# starts with an empty cache. Set redis.enabled=false to use `externalRedis`.
+# -----------------------------------------------------------------------------
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+  # Require a password (taken from the app Secret's REDIS_PASSWORD key).
+  auth:
+    enabled: true
+  service:
+    port: 6379
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Used only when redis.enabled=false.
+externalRedis:
+  host: ""
+  port: 6379

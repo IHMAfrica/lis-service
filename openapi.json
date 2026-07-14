@@ -1,0 +1,3025 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "LIS",
+        "description": "Laboratory Information Service API",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8089",
+            "description": "Local server"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Facility-laboratory maps",
+            "description": "CRUD and bulk upload for facility-to-lab-test mappings"
+        },
+        {
+            "name": "Laboratory tests",
+            "description": "CRUD for tests offered by a laboratory"
+        },
+        {
+            "name": "Statistics",
+            "description": "Aggregate lab-workflow statistics"
+        },
+        {
+            "name": "Districts",
+            "description": "Read access to districts"
+        },
+        {
+            "name": "Laboratories",
+            "description": "CRUD for laboratories"
+        },
+        {
+            "name": "Lab results",
+            "description": "Review of unsolicited lab results (accept / reject)"
+        },
+        {
+            "name": "Notifications",
+            "description": "User notifications with live SSE delivery"
+        },
+        {
+            "name": "Facilities",
+            "description": "Read access to health facilities"
+        },
+        {
+            "name": "Lab types",
+            "description": "CRUD for laboratory types"
+        },
+        {
+            "name": "Provinces",
+            "description": "Read access to provinces"
+        },
+        {
+            "name": "Reports",
+            "description": "Downloadable lab-workflow reports"
+        },
+        {
+            "name": "Tests",
+            "description": "CRUD for the test catalogue"
+        }
+    ],
+    "paths": {
+        "/api/v1/lis-service/tests/{id}": {
+            "get": {
+                "tags": [
+                    "Tests"
+                ],
+                "summary": "Get a test by id",
+                "operationId": "getById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Tests"
+                ],
+                "summary": "Update a test",
+                "operationId": "update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Tests"
+                ],
+                "summary": "Delete a test",
+                "operationId": "delete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/laboratory-tests/{id}": {
+            "get": {
+                "tags": [
+                    "Laboratory tests"
+                ],
+                "summary": "Get a laboratory-test offering by id",
+                "operationId": "getById_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryTestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Laboratory tests"
+                ],
+                "summary": "Update a laboratory-test offering",
+                "operationId": "update_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLaboratoryTest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryTestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Laboratory tests"
+                ],
+                "summary": "Delete a laboratory-test offering",
+                "operationId": "delete_1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/laboratories/{id}": {
+            "get": {
+                "tags": [
+                    "Laboratories"
+                ],
+                "summary": "Get a laboratory by id",
+                "operationId": "getById_2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Laboratories"
+                ],
+                "summary": "Update a laboratory",
+                "operationId": "update_2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLaboratory"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Laboratories"
+                ],
+                "summary": "Delete a laboratory",
+                "operationId": "delete_2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-types/{id}": {
+            "get": {
+                "tags": [
+                    "Lab types"
+                ],
+                "summary": "Get a lab type by id",
+                "operationId": "getById_3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabTypeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Lab types"
+                ],
+                "summary": "Update a lab type",
+                "operationId": "update_3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateLabType"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabTypeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Lab types"
+                ],
+                "summary": "Delete a lab type",
+                "operationId": "delete_3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facility-laboratory-maps/{id}": {
+            "get": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Get a facility-to-lab-test mapping by id",
+                "operationId": "getById_4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FacilityLaboratoryMapResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Update a facility-to-lab-test mapping",
+                "operationId": "update_4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateFacilityLaboratoryMap"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FacilityLaboratoryMapResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Delete a facility-to-lab-test mapping",
+                "operationId": "delete_4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/tests": {
+            "get": {
+                "tags": [
+                    "Tests"
+                ],
+                "summary": "List tests (paged), optionally filtered by active flag",
+                "operationId": "list",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "isActive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseTestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tests"
+                ],
+                "summary": "Create a test",
+                "operationId": "create",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/{id}/read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark a notification as read",
+                "operationId": "markRead",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark all of the current user's notifications as read",
+                "operationId": "markAllRead",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MarkReadResult"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/dispatch": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Create and dispatch a notification",
+                "description": "Targets a facility's active users (facilityId) or a single user (userId). Internal/test surface for the plumbing; lab-event handlers will call the dispatcher directly.",
+                "operationId": "dispatch",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DispatchRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotificationResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/laboratory-tests": {
+            "get": {
+                "tags": [
+                    "Laboratory tests"
+                ],
+                "summary": "List laboratory-test offerings (paged), optionally filtered",
+                "operationId": "list_1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "laboratoryId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "testId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "isActive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseLaboratoryTestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Laboratory tests"
+                ],
+                "summary": "Register a test as offered by a laboratory",
+                "operationId": "create_1",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateLaboratoryTest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryTestResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/laboratories": {
+            "get": {
+                "tags": [
+                    "Laboratories"
+                ],
+                "summary": "List laboratories (paged), optionally filtered by district, type and active flag",
+                "operationId": "list_2",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "districtId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "labTypeId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "isActive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseLaboratoryResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Laboratories"
+                ],
+                "summary": "Create a laboratory",
+                "operationId": "create_2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateLaboratory"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LaboratoryResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-types": {
+            "get": {
+                "tags": [
+                    "Lab types"
+                ],
+                "summary": "List all lab types",
+                "operationId": "list_3",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/LabTypeResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Lab types"
+                ],
+                "summary": "Create a lab type",
+                "operationId": "create_3",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateLabType"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabTypeResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-results/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Lab results"
+                ],
+                "summary": "Reject an unsolicited result \u2014 not forwarded; notifies the facility",
+                "operationId": "reject",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReviewDecisionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabResultResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-results/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Lab results"
+                ],
+                "summary": "Accept an unsolicited result \u2014 forwards it downstream and notifies the facility",
+                "operationId": "accept",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabResultResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facility-laboratory-maps": {
+            "get": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "List facility-to-lab-test mappings (paged), optionally filtered",
+                "operationId": "list_4",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "facilityId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "laboratoryTestId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "isActive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseFacilityLaboratoryMapResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Create a facility-to-lab-test mapping",
+                "operationId": "create_4",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateFacilityLaboratoryMap"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FacilityLaboratoryMapResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facility-laboratory-maps/bulk-upload": {
+            "post": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Bulk upload facility-to-lab-test mappings from a filled-in template",
+                "description": "Existing active mappings are left unchanged, inactive ones are reactivated, and new combinations are created. Returns a summary of what happened.",
+                "operationId": "bulkUpload",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BulkUploadSummary"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/statistics": {
+            "get": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Lab-workflow statistics for a facility over a time period",
+                "description": "Counts orders sent, orders acknowledged, and results received (total / valid / unsolicited) for one facility. The period defaults to the last 30 days when `from`/`to` are omitted; both bounds are inclusive dates.",
+                "operationId": "facilityStatistics",
+                "parameters": [
+                    {
+                        "name": "mflCode",
+                        "in": "query",
+                        "description": "Facility MFL code to scope the statistics to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 101010
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Start of the window (inclusive, ISO date). Defaults to 29 days before `to`.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "End of the window (inclusive, ISO date). Defaults to today (UTC).",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatisticsResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/reports/lab-orders": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Download the lab-order turn-around-time report (.xlsx)",
+                "description": "One row per lab order for the facility, joined to its acknowledgement and current result. Tat is the order-to-result turn-around time (days + hours). Optionally bounded by an inclusive [from, to] date window on when the order was placed.",
+                "operationId": "labOrderReport",
+                "parameters": [
+                    {
+                        "name": "mflCode",
+                        "in": "query",
+                        "description": "Facility MFL code to scope the report to",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 101010
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "Start of the window (inclusive, ISO date). Omit for no lower bound.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "End of the window (inclusive, ISO date). Omit for no upper bound.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "byte"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/provinces": {
+            "get": {
+                "tags": [
+                    "Provinces"
+                ],
+                "summary": "List all provinces",
+                "operationId": "list_5",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ProvinceResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/provinces/{id}": {
+            "get": {
+                "tags": [
+                    "Provinces"
+                ],
+                "summary": "Get a province by id",
+                "operationId": "getById_5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProvinceResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "List the current user's notifications (most recent first)",
+                "operationId": "list_6",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "unreadOnly",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseNotificationResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Unread notification count for the current user",
+                "operationId": "unreadCount",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UnreadCountResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/stream": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Live notification stream (Server-Sent Events) for the current user",
+                "operationId": "stream",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ServerSentEventObject"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-results/{id}": {
+            "get": {
+                "tags": [
+                    "Lab results"
+                ],
+                "summary": "Get a lab result (with observations)",
+                "operationId": "getById_6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LabResultResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/lab-results/pending-review": {
+            "get": {
+                "tags": [
+                    "Lab results"
+                ],
+                "summary": "List unsolicited lab results awaiting review at the current user's facilities",
+                "operationId": "pendingReview",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseLabResultResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facility-laboratory-maps/template": {
+            "get": {
+                "tags": [
+                    "Facility-laboratory maps"
+                ],
+                "summary": "Download the bulk-upload Excel template",
+                "description": "Returns an .xlsx with dropdowns of the current mfl, loinc and lab codes.",
+                "operationId": "downloadTemplate",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "byte"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facilities": {
+            "get": {
+                "tags": [
+                    "Facilities"
+                ],
+                "summary": "List facilities (paged), optionally filtered by district and active flag",
+                "operationId": "list_7",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "districtId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "isActive",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseFacilityResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/facilities/{id}": {
+            "get": {
+                "tags": [
+                    "Facilities"
+                ],
+                "summary": "Get a facility by id",
+                "operationId": "getById_7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FacilityResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/districts": {
+            "get": {
+                "tags": [
+                    "Districts"
+                ],
+                "summary": "List districts (paged), optionally filtered by province",
+                "operationId": "list_8",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "provinceId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PagedResponseDistrictResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/districts/{id}": {
+            "get": {
+                "tags": [
+                    "Districts"
+                ],
+                "summary": "Get a district by id",
+                "operationId": "getById_8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DistrictResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lis-service/notifications/{id}": {
+            "delete": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Delete (hide) a notification for the current user",
+                "operationId": "delete_5",
+                "parameters": [
+                    {
+                        "name": "X-User-Id",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "UpdateTest": {
+                "type": "object",
+                "description": "Update a test",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 256,
+                        "minLength": 0
+                    },
+                    "abbreviation": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "shortTitle": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "isCompositeTest": {
+                        "type": "boolean"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "TestResponse": {
+                "type": "object",
+                "description": "Test",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "loincCode": {
+                        "type": "string"
+                    },
+                    "abbreviation": {
+                        "type": "string"
+                    },
+                    "shortTitle": {
+                        "type": "string"
+                    },
+                    "isCompositeTest": {
+                        "type": "boolean"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateLaboratoryTest": {
+                "type": "object",
+                "description": "Update a laboratory-test offering",
+                "properties": {
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LaboratoryTestResponse": {
+                "type": "object",
+                "description": "Laboratory-test offering",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "laboratoryId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "testId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateLaboratory": {
+                "type": "object",
+                "description": "Update a laboratory",
+                "properties": {
+                    "labName": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 0
+                    },
+                    "districtId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "comment": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "labTypeId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LaboratoryResponse": {
+                "type": "object",
+                "description": "Laboratory",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "labCode": {
+                        "type": "string"
+                    },
+                    "labName": {
+                        "type": "string"
+                    },
+                    "districtId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "comment": {
+                        "type": "string"
+                    },
+                    "labTypeId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateLabType": {
+                "type": "object",
+                "description": "Update a lab type",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "LabTypeResponse": {
+                "type": "object",
+                "description": "Lab type",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateFacilityLaboratoryMap": {
+                "type": "object",
+                "description": "Update a facility-to-lab-test mapping",
+                "properties": {
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "FacilityLaboratoryMapResponse": {
+                "type": "object",
+                "description": "Facility-to-lab-test mapping",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "facilityId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "laboratoryTestId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "CreateTest": {
+                "type": "object",
+                "description": "Create a test",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 256,
+                        "minLength": 0
+                    },
+                    "loincCode": {
+                        "type": "string",
+                        "maxLength": 20,
+                        "minLength": 0
+                    },
+                    "abbreviation": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "shortTitle": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "isCompositeTest": {
+                        "type": "boolean"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "loincCode",
+                    "name"
+                ]
+            },
+            "MarkReadResult": {
+                "type": "object",
+                "description": "Result of a bulk read operation",
+                "properties": {
+                    "updated": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "DispatchRequest": {
+                "type": "object",
+                "description": "Create and dispatch a notification (to a facility's users or a single user)",
+                "properties": {
+                    "facilityId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Target facility; notify all its active users"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Target a single user directly (alternative to facilityId)"
+                    },
+                    "type": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 0
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255,
+                        "minLength": 0
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "Optional JSON payload (as text)"
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "required": [
+                    "type"
+                ]
+            },
+            "NotificationResponse": {
+                "type": "object",
+                "description": "A notification as seen by a recipient",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Notification id",
+                        "example": "6f1e..."
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "Notification kind",
+                        "example": "LAB_RESULT"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "body": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "Optional JSON payload (as text)"
+                    },
+                    "facilityId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "correlationId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "readAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When this recipient read it; null = unread"
+                    }
+                }
+            },
+            "CreateLaboratoryTest": {
+                "type": "object",
+                "description": "Register a test as offered by a laboratory",
+                "properties": {
+                    "laboratoryId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "testId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "laboratoryId",
+                    "testId"
+                ]
+            },
+            "CreateLaboratory": {
+                "type": "object",
+                "description": "Create a laboratory",
+                "properties": {
+                    "labCode": {
+                        "type": "string",
+                        "maxLength": 5,
+                        "minLength": 0
+                    },
+                    "labName": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 0
+                    },
+                    "districtId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "comment": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "labTypeId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "districtId",
+                    "labCode",
+                    "labName"
+                ]
+            },
+            "CreateLabType": {
+                "type": "object",
+                "description": "Create a lab type",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "ReviewDecisionRequest": {
+                "type": "object",
+                "description": "Clinician review decision (note optional, typically for rejections)",
+                "properties": {
+                    "note": {
+                        "type": "string",
+                        "maxLength": 1000,
+                        "minLength": 0
+                    }
+                }
+            },
+            "LabResultResponse": {
+                "type": "object",
+                "description": "A received lab result",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "messageControlId": {
+                        "type": "string"
+                    },
+                    "placerOrderNumber": {
+                        "type": "string"
+                    },
+                    "fillerOrderNumber": {
+                        "type": "string"
+                    },
+                    "labCode": {
+                        "type": "string"
+                    },
+                    "orderingMflCode": {
+                        "type": "string"
+                    },
+                    "orderingHmisCode": {
+                        "type": "string"
+                    },
+                    "patientIdentifier": {
+                        "type": "string"
+                    },
+                    "patientName": {
+                        "type": "string"
+                    },
+                    "patientDob": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "patientSex": {
+                        "type": "string"
+                    },
+                    "testLoinc": {
+                        "type": "string"
+                    },
+                    "testName": {
+                        "type": "string"
+                    },
+                    "resultStatus": {
+                        "type": "string"
+                    },
+                    "messageKind": {
+                        "type": "string"
+                    },
+                    "specimenCollectedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "reconciliationStatus": {
+                        "type": "string"
+                    },
+                    "matchMethod": {
+                        "type": "string"
+                    },
+                    "candidateCount": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "reviewStatus": {
+                        "type": "string"
+                    },
+                    "reviewedBy": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "reviewedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "reviewNote": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "isCurrent": {
+                        "type": "boolean"
+                    },
+                    "forwardStatus": {
+                        "type": "string"
+                    },
+                    "receivedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "observations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ObservationResponse"
+                        }
+                    }
+                }
+            },
+            "ObservationResponse": {
+                "type": "object",
+                "description": "A single observation (OBX) of a lab result",
+                "properties": {
+                    "setId": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "valueType": {
+                        "type": "string"
+                    },
+                    "loinc": {
+                        "type": "string"
+                    },
+                    "localCode": {
+                        "type": "string"
+                    },
+                    "text": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "numericValue": {
+                        "type": "number"
+                    },
+                    "units": {
+                        "type": "string"
+                    },
+                    "referenceRange": {
+                        "type": "string"
+                    },
+                    "abnormalFlags": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "observedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "CreateFacilityLaboratoryMap": {
+                "type": "object",
+                "description": "Map a facility to a lab-offered test",
+                "properties": {
+                    "facilityId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "laboratoryTestId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "isActive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "facilityId",
+                    "laboratoryTestId"
+                ]
+            },
+            "BulkUploadSummary": {
+                "type": "object",
+                "description": "Summary of a facility-laboratory-map bulk upload",
+                "properties": {
+                    "totalRows": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total data rows read from the sheet (excludes the header and blank rows)",
+                        "example": 120
+                    },
+                    "created": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "New mappings created",
+                        "example": 80
+                    },
+                    "reactivated": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Existing inactive mappings reactivated",
+                        "example": 5
+                    },
+                    "skippedExisting": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Existing active mappings left unchanged",
+                        "example": 30
+                    },
+                    "duplicateRows": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Rows that duplicated an earlier row in the same file",
+                        "example": 2
+                    },
+                    "errorRows": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Rows that could not be processed",
+                        "example": 3
+                    },
+                    "errors": {
+                        "type": "array",
+                        "description": "Details of each row that failed",
+                        "items": {
+                            "$ref": "#/components/schemas/RowError"
+                        }
+                    }
+                }
+            },
+            "RowError": {
+                "type": "object",
+                "description": "A single row that could not be processed",
+                "properties": {
+                    "row": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "1-based row number in the sheet (matches the spreadsheet)",
+                        "example": 14
+                    },
+                    "mflCode": {
+                        "type": "string"
+                    },
+                    "loincCode": {
+                        "type": "string"
+                    },
+                    "labCode": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "Why the row was rejected",
+                        "example": "Unknown mfl code"
+                    }
+                }
+            },
+            "PagedResponseTestResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/TestResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "StatisticsResponse": {
+                "type": "object",
+                "description": "Basic lab-workflow statistics for a facility over a time period",
+                "properties": {
+                    "mflCode": {
+                        "type": "string",
+                        "description": "Facility MFL code the statistics are scoped to",
+                        "example": "101010"
+                    },
+                    "facilityName": {
+                        "type": "string",
+                        "description": "Facility name, when the MFL code resolves to a known facility"
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Start of the reporting window (inclusive)",
+                        "example": "2026-06-14"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "End of the reporting window (inclusive)",
+                        "example": "2026-07-13"
+                    },
+                    "labOrdersSent": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Lab orders enqueued for publishing by this facility"
+                    },
+                    "labOrdersAcknowledged": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Lab orders that received an acknowledgement from the laboratory"
+                    },
+                    "labResultsReceived": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total lab result messages received for this facility"
+                    },
+                    "labResultsValid": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Received results carrying valid observations (message_kind = RESULT)"
+                    },
+                    "labResultsUnsolicited": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Received results that could not be matched to a known order (unsolicited)"
+                    }
+                }
+            },
+            "ProvinceResponse": {
+                "type": "object",
+                "description": "Province",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Province id",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Province name",
+                        "example": "Lusaka"
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Province code",
+                        "example": "LSK"
+                    }
+                }
+            },
+            "PagedResponseNotificationResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/NotificationResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "UnreadCountResponse": {
+                "type": "object",
+                "description": "Unread notification count for the current user",
+                "properties": {
+                    "unread": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "ServerSentEventObject": {},
+            "PagedResponseLaboratoryTestResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/LaboratoryTestResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PagedResponseLaboratoryResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/LaboratoryResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PagedResponseLabResultResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/LabResultResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PagedResponseFacilityLaboratoryMapResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/FacilityLaboratoryMapResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "FacilityResponse": {
+                "type": "object",
+                "description": "Health facility",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Facility id",
+                        "example": 1001
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Facility name",
+                        "example": "University Teaching Hospital"
+                    },
+                    "districtId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "District id",
+                        "example": 42
+                    },
+                    "hmisCode": {
+                        "type": "string",
+                        "description": "HMIS code",
+                        "example": "504010"
+                    },
+                    "mflCode": {
+                        "type": "string",
+                        "description": "Master Facility List code",
+                        "example": "1010101"
+                    },
+                    "isActive": {
+                        "type": "boolean",
+                        "description": "Whether the facility is active",
+                        "example": true
+                    }
+                }
+            },
+            "PagedResponseFacilityResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/FacilityResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "DistrictResponse": {
+                "type": "object",
+                "description": "District",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "District id",
+                        "example": 42
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "District name",
+                        "example": "Kafue"
+                    },
+                    "provinceId": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Owning province id",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "District code",
+                        "example": "KAF"
+                    }
+                }
+            },
+            "PagedResponseDistrictResponse": {
+                "type": "object",
+                "description": "Paged response",
+                "properties": {
+                    "content": {
+                        "type": "array",
+                        "description": "List of items",
+                        "example": "[{\"id\":1,\"name\":\"Item 1\"}, ...]",
+                        "items": {
+                            "$ref": "#/components/schemas/DistrictResponse"
+                        }
+                    },
+                    "totalElements": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of items",
+                        "example": 100
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Total number of pages",
+                        "example": 10
+                    },
+                    "currentPage": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Current page number",
+                        "example": 1
+                    },
+                    "size": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Number of items per page",
+                        "example": 20
+                    },
+                    "hasNext": {
+                        "type": "boolean"
+                    },
+                    "hasPrevious": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
