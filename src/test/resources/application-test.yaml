@@ -1,0 +1,13 @@
+# Test profile. Connection details for Postgres/Redis are injected at runtime by
+# the Testcontainers @ServiceConnection beans (see TestcontainersConfiguration);
+# only test-specific overrides live here.
+spring:
+  kafka:
+    # Kafka is an external dependency and no broker is started for tests, so do not
+    # start the Streams client (it would fail on missing source topics). All Kafka
+    # beans are still wired, validating configuration.
+    streams:
+      auto-startup: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

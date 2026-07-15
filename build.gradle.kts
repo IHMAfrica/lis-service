@@ -59,6 +59,14 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
     testImplementation("org.springframework.grpc:spring-grpc-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    // Testcontainers 2.0 renamed modules with a `testcontainers-` prefix. Only core
+    // (GenericContainer/DockerImageName) and the postgresql module are needed — Boot's
+    // @ServiceConnection beans are used instead of the JUnit @Testcontainers extension.
+    testImplementation("org.testcontainers:testcontainers:2.0.5")
+    testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
+    // Bridges the Postgres container to an R2DBC ConnectionFactory for @ServiceConnection.
+    testImplementation("org.testcontainers:testcontainers-r2dbc:2.0.5")
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
@@ -67,6 +75,8 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.grpc:spring-grpc-dependencies:${property("springGrpcVersion")}")
+        // Also resolves testcontainers versions on the protobuf plugin's proto-path configs.
+        mavenBom("org.testcontainers:testcontainers-bom:2.0.5")
     }
 }
 
