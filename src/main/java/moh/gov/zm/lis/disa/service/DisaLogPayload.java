@@ -50,6 +50,9 @@ public class DisaLogPayload {
     private Boolean isAdmitted;
     private Boolean isPatientDeceased;
 
+    private String requestedDate;
+    private String specimenCollectedDate;
+
     // -----------------------------------------------------------------------
     // VL / ART shared fields
     // -----------------------------------------------------------------------

@@ -14,6 +14,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -26,6 +27,25 @@ import java.util.UUID;
 public class FacilityLaboratoryMapService {
     private final FacilityLaboratoryMapRepository facilityLaboratoryMapRepository;
     private final R2dbcEntityTemplate template;
+
+    /**
+     * Distinct lab codes a facility (by MFL code) has at least one active mapping to,
+     * resolved facility → facility_laboratory_map → laboratory_test → laboratory.
+     */
+    public Flux<String> labCodesForFacility(String mflCode) {
+        return template.getDatabaseClient().sql("""
+                        SELECT DISTINCT l.lab_code
+                        FROM lab.facility_laboratory_map flm
+                        JOIN lab.laboratory_test lt ON lt.id = flm.laboratory_test_id
+                        JOIN lab.laboratory l      ON l.id = lt.laboratory_id
+                        JOIN ref.facility f        ON f.id = flm.facility_id
+                        WHERE f.mfl_code = :mflCode AND flm.is_active = TRUE
+                        ORDER BY l.lab_code
+                        """)
+                .bind("mflCode", mflCode)
+                .map(row -> row.get("lab_code", String.class))
+                .all();
+    }
 
     public Mono<PagedResponse<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse>> list(
             int page, int size, Long facilityId, UUID laboratoryTestId, Boolean isActive) {

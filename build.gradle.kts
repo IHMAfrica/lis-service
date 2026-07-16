@@ -28,6 +28,22 @@ dependencies {
     implementation("ca.uhn.hapi:hapi-structures-v25:2.5.1")
     implementation("org.apache.poi:poi-ooxml:5.4.0")
     implementation("io.projectreactor.kafka:reactor-kafka:1.3.22")
+    // Zebra Link-OS SDK (unzipped under resources; not published to Maven Central).
+    // Only the SDK-unique jars needed for USB printing are listed — the SDK also ships
+    // slf4j-simple / log4j / jackson / httpclient (would collide with Spring Boot's
+    // managed versions; slf4j-simple breaks Logback) and commons-lang3 / commons-io
+    // (already provided transitively by Apache POI, so declaring them here duplicated
+    // BOOT-INF/lib entries). Those are all left off; only the jars below are declared.
+    val zebraSdkLib = "src/main/resources/Link-OS_SDK/PC/v2.15.5569/lib"
+    implementation(files(
+        "$zebraSdkLib/ZSDK_API.jar",
+        "$zebraSdkLib/usb4java-1.3.0.jar",
+        "$zebraSdkLib/libusb4java-1.3.0-linux-x86_64.jar",
+        "$zebraSdkLib/libusb4java-1.3.0-linux-x86.jar",
+        "$zebraSdkLib/libusb4java-1.3.0-linux-arm.jar",
+        "$zebraSdkLib/libusb4java-1.3.0-darwin-x86-64.jar",
+        "$zebraSdkLib/snmp6_1z.jar",
+    ))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
@@ -103,3 +119,11 @@ protobuf {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// The Zebra SDK jars are consumed as a compile/runtime dependency (see above), so
+// keep the unzipped SDK out of the packaged resources to avoid bundling them twice.
+tasks.withType<org.gradle.language.jvm.tasks.ProcessResources> {
+    exclude("Link-OS_SDK/**")
+}
+
+

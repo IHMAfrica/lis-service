@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -57,6 +58,13 @@ public class FacilityLaboratoryMapController {
     @GetMapping("/{id}")
     public Mono<FacilityLaboratoryMapDTO.FacilityLaboratoryMapResponse> getById(@PathVariable UUID id) {
         return facilityLaboratoryMapService.findById(id);
+    }
+
+    @Operation(summary = "Lab codes a facility has at least one active mapping to",
+            description = "Distinct lab codes reachable from the facility's active facility-to-lab-test mappings.")
+    @GetMapping("/lab-codes")
+    public Flux<String> labCodes(@RequestParam String mflCode) {
+        return facilityLaboratoryMapService.labCodesForFacility(mflCode);
     }
 
     @Operation(summary = "Create a facility-to-lab-test mapping")

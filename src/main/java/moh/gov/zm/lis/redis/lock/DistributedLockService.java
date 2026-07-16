@@ -18,6 +18,7 @@ import java.util.UUID;
 public class DistributedLockService {
     public static final String OUTBOX_RELAY_LOCK = "lis:lock:outbox-relay";
     public static final String LAB_RESULT_FORWARD_LOCK = "lis:lock:lab-result-forward";
+    public static final String MESSAGING_PURGE_LOCK = "lis:lock:messaging-purge";
 
     private final ReactiveStringRedisTemplate redisTemplate;
     private final RedisScript<Long> unlockScript;
