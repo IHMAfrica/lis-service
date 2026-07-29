@@ -19,3 +19,5 @@
 .idea/
 *.tmproj
 .vscode/
+*.pdf
+docker-compose.yml
