@@ -1,0 +1,37 @@
+# Fleet bundles the whole repo path (everything alongside fleet.yaml) into a
+# single Kubernetes resource, which must stay under the ~3 MiB apiserver limit.
+# Only fleet.yaml and the Helm chart (lis-chart/) are needed to render the release,
+# so exclude the application source, build output, tooling and docs. In particular
+# src/ carries the multi-MB Flyway seed migrations and the DISA/Zebra SDK, which is
+# what pushed the bundle over the limit.
+
+# Application source & resources (migrations, SDK, spec PDF, images)
+src/
+
+# Build output & Gradle
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+build.gradle.kts
+settings.gradle.kts
+
+# Container / compose / scripts (not used by the chart)
+Dockerfile
+docker-compose.yml
+scripts/
+
+# CI / VCS / IDE / OS
+.github/
+.git/
+.gitignore
+.gitattributes
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Docs
+*.md
+*.pdf
