@@ -1,0 +1,30 @@
+{{- if not .Values.secrets.existingSecret }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lis-chart.configMapName" . }}
+  labels:
+    {{- include "lis-chart.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.springProfile | quote }}
+  SERVER_PORT: {{ .Values.ports.http | quote }}
+  SPRING_GRPC_SERVER_PORT: {{ .Values.ports.grpc | quote }}
+  # Database (r2dbc + Flyway) — non-secret parts
+  DB_HOST: {{ include "lis-chart.databaseHost" . | quote }}
+  DB_PORT: {{ include "lis-chart.databasePort" . | quote }}
+  DB_NAME: {{ include "lis-chart.databaseName" . | quote }}
+  DB_USER: {{ include "lis-chart.databaseUser" . | quote }}
+  # Redis
+  REDIS_HOST: {{ include "lis-chart.redisHost" . | quote }}
+  REDIS_PORT: {{ include "lis-chart.redisPort" . | quote }}
+  # Kafka (external)
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.kafka.bootstrapServers | quote }}
+  KAFKA_SECURITY_PROTOCOL: {{ .Values.kafka.securityProtocol | quote }}
+  KAFKA_SASL_MECHANISM: {{ .Values.kafka.saslMechanism | quote }}
+  # Downstream gRPC receiver
+  LIS_GRPC_MESSAGE_RECEIVER_HOST: {{ .Values.messageReceiver.host | quote }}
+  LIS_GRPC_MESSAGE_RECEIVER_PORT: {{ .Values.messageReceiver.port | quote }}
+  {{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+{{- end }}

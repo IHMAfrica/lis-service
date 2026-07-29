@@ -156,6 +156,14 @@ config:
   LAB_ORDERS_ACK_TOPIC: "lab-orders-ack"
   LAB_RESULTS_TOPIC: "lab-results"
   DLQ_TOPIC: "lis.dlq"
+  # Zebra label printing (barcode / shipping list). Transport is 'usb' (Link-OS SDK)
+  # or 'network'; USB is not reachable from a pod, so in-cluster deployments that
+  # print typically use 'network' with ZEBRA_PRINTER_HOST set.
+  PRINT_TRANSPORT: "usb"
+  ZEBRA_USB_SERIAL: ""
+  ZEBRA_PRINTER_HOST: ""
+  ZEBRA_PRINTER_PORT: "9100"
+  BARCODE_STRIPS: "3"
 
 # Extra environment variables (list of name/value or name/valueFrom entries)
 # appended verbatim to the container.
@@ -173,7 +181,7 @@ secrets:
   # Secret. The bundled Postgres/Redis also read their passwords (DB_PASSWORD /
   # REDIS_PASSWORD keys) from it, so it must contain every key the app expects
   # (SPRING_PROFILES_ACTIVE, SERVER_PORT, SPRING_GRPC_SERVER_PORT, DB_*, REDIS_*,
-  # KAFKA_*, LIS_GRPC_MESSAGE_RECEIVER_*, KC_*, ...).
+  # KAFKA_*, LIS_GRPC_MESSAGE_RECEIVER_*, KC_*, PRINT_TRANSPORT, ZEBRA_*, ...).
   # Set to "" to instead have the chart generate a ConfigMap + Secret from the
   # `config` and `secrets.data` values below (self-contained / dev mode).
   existingSecret: "lis-credentials"

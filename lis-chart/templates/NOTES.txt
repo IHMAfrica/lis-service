@@ -1,0 +1,45 @@
+{{ include "lis-chart.fullname" . }} has been deployed. 🎉
+
+Chart:   {{ .Chart.Name }}-{{ .Chart.Version }}  (app {{ .Chart.AppVersion }})
+{{- if .Values.secrets.existingSecret }}
+Config:  the app sources its entire environment from Secret "{{ .Values.secrets.existingSecret }}"
+         (ensure it contains every expected key: SPRING_PROFILES_ACTIVE, SERVER_PORT,
+         SPRING_GRPC_SERVER_PORT, DB_*, REDIS_*, KAFKA_*, LIS_GRPC_MESSAGE_RECEIVER_*,
+         KC_*, PRINT_TRANSPORT, ZEBRA_*).
+{{- else }}
+Config:  chart-managed ConfigMap + Secret (profile {{ .Values.springProfile }})
+{{- end }}
+
+Dependencies:
+  PostgreSQL: {{ if .Values.postgresql.enabled }}bundled, persistent ({{ .Values.postgresql.persistence.size }}) at {{ include "lis-chart.databaseHost" . }}:{{ include "lis-chart.databasePort" . }}{{ else }}external — {{ .Values.externalDatabase.host }}:{{ .Values.externalDatabase.port }}{{ end }}
+  Redis:      {{ if .Values.redis.enabled }}bundled, ephemeral (no persistence) at {{ include "lis-chart.redisHost" . }}:{{ include "lis-chart.redisPort" . }}{{ else }}external — {{ .Values.externalRedis.host }}:{{ .Values.externalRedis.port }}{{ end }}
+  Kafka:      external — {{ .Values.kafka.bootstrapServers }}
+
+1. Check rollout status:
+   kubectl --namespace {{ .Release.Namespace }} rollout status deployment/{{ include "lis-chart.fullname" . }}
+
+2. Reach the REST API + actuator:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if .Values.httpRoute.enabled }}
+   Via the Gateway API HTTPRoute host(s): {{ join ", " .Values.httpRoute.hostnames }}
+{{- else }}
+   The Service is {{ .Values.service.type }}. Port-forward to reach it locally:
+
+   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "lis-chart.fullname" . }} 8080:{{ .Values.service.port }}
+   # then: curl http://127.0.0.1:8080/actuator/health
+   #       open  http://127.0.0.1:8080/swagger-ui.html
+{{- end }}
+
+3. Run the smoke test:
+   helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+{{- if not .Values.secrets.existingSecret }}
+
+WARNING: this release generated a Secret from default values in `secrets.data`.
+Override DB_PASSWORD / REDIS_PASSWORD / KAFKA_JAAS_CONFIG (or point
+`secrets.existingSecret` at a managed Secret) before using this in production.
+{{- end }}

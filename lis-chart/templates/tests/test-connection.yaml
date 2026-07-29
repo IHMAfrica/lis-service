@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "lis-chart.fullname" . }}-test-connection"
+  labels:
+    {{- include "lis-chart.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: health
+      image: busybox
+      command: ['wget']
+      args: ['--spider', '-S', 'http://{{ include "lis-chart.fullname" . }}:{{ .Values.service.port }}/actuator/health']
+  restartPolicy: Never
