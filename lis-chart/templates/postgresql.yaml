@@ -8,8 +8,7 @@ metadata:
     {{- include "lis-chart.labels" . | nindent 4 }}
     app.kubernetes.io/component: postgresql
 spec:
-  # Headless: gives the StatefulSet pod stable DNS; the app connects via this name.
-  clusterIP: None
+  type: ClusterIP
   ports:
     - port: {{ .Values.postgresql.service.port }}
       targetPort: postgresql
@@ -18,17 +17,38 @@ spec:
   selector:
     {{- include "lis-chart.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: postgresql
+{{- if .Values.postgresql.persistence.enabled }}
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: {{ $name }}
   labels:
     {{- include "lis-chart.labels" . | nindent 4 }}
     app.kubernetes.io/component: postgresql
 spec:
-  serviceName: {{ $name }}
+  accessModes:
+    {{- toYaml .Values.postgresql.persistence.accessModes | nindent 4 }}
+  {{- if .Values.postgresql.persistence.storageClass }}
+  storageClassName: {{ .Values.postgresql.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.persistence.size | quote }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "lis-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
   replicas: 1
+  # Single writer on a ReadWriteOnce volume — never run two pods at once.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "lis-chart.selectorLabels" . | nindent 6 }}
@@ -84,19 +104,13 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-        labels:
-          {{- include "lis-chart.labels" . | nindent 10 }}
-          app.kubernetes.io/component: postgresql
-      spec:
-        accessModes:
-          {{- toYaml .Values.postgresql.persistence.accessModes | nindent 10 }}
-        {{- if .Values.postgresql.persistence.storageClass }}
-        storageClassName: {{ .Values.postgresql.persistence.storageClass | quote }}
-        {{- end }}
-        resources:
-          requests:
-            storage: {{ .Values.postgresql.persistence.size | quote }}
+      volumes:
+        - name: data
+          {{- if .Values.postgresql.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $name }}
+          {{- else }}
+          # Persistence disabled — data is lost when the pod is recreated.
+          emptyDir: {}
+          {{- end }}
 {{- end }}
