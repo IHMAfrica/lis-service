@@ -70,56 +70,10 @@ Names of the bundled dependencies and generated objects.
 {{- printf "%s-redis" (include "lis-chart.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-{{- define "lis-chart.configMapName" -}}
-{{- printf "%s-config" (include "lis-chart.fullname" .) | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
 {{/*
-The Secret the application reads its sensitive env from: the caller's existing
-Secret when set, otherwise the one this chart generates.
+The pre-existing Secret the application (and the bundled Postgres/Redis) read
+their environment from. The chart never creates it.
 */}}
 {{- define "lis-chart.secretName" -}}
-{{- if .Values.secrets.existingSecret }}
-{{- .Values.secrets.existingSecret }}
-{{- else }}
-{{- printf "%s-secret" (include "lis-chart.fullname" .) | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
-
-{{/*
-Resolved database connection: the bundled Postgres service when enabled, else externalDatabase.
-*/}}
-{{- define "lis-chart.databaseHost" -}}
-{{- if .Values.postgresql.enabled }}
-{{- include "lis-chart.postgresql.fullname" . }}
-{{- else }}
-{{- required "externalDatabase.host is required when postgresql.enabled=false" .Values.externalDatabase.host }}
-{{- end }}
-{{- end }}
-
-{{- define "lis-chart.databasePort" -}}
-{{- if .Values.postgresql.enabled }}{{ .Values.postgresql.service.port }}{{ else }}{{ .Values.externalDatabase.port }}{{ end }}
-{{- end }}
-
-{{- define "lis-chart.databaseName" -}}
-{{- if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.database }}{{ else }}{{ .Values.externalDatabase.database }}{{ end }}
-{{- end }}
-
-{{- define "lis-chart.databaseUser" -}}
-{{- if .Values.postgresql.enabled }}{{ .Values.postgresql.auth.username }}{{ else }}{{ .Values.externalDatabase.username }}{{ end }}
-{{- end }}
-
-{{/*
-Resolved Redis connection.
-*/}}
-{{- define "lis-chart.redisHost" -}}
-{{- if .Values.redis.enabled }}
-{{- include "lis-chart.redis.fullname" . }}
-{{- else }}
-{{- required "externalRedis.host is required when redis.enabled=false" .Values.externalRedis.host }}
-{{- end }}
-{{- end }}
-
-{{- define "lis-chart.redisPort" -}}
-{{- if .Values.redis.enabled }}{{ .Values.redis.service.port }}{{ else }}{{ .Values.externalRedis.port }}{{ end }}
+{{- required "envSecret is required (the pre-existing Secret holding all app env)" .Values.envSecret }}
 {{- end }}

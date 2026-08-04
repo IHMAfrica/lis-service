@@ -1,19 +1,16 @@
 {{ include "lis-chart.fullname" . }} has been deployed. 🎉
 
-Chart:   {{ .Chart.Name }}-{{ .Chart.Version }}  (app {{ .Chart.AppVersion }})
-{{- if .Values.secrets.existingSecret }}
-Config:  the app sources its entire environment from Secret "{{ .Values.secrets.existingSecret }}"
-         (ensure it contains every expected key: SPRING_PROFILES_ACTIVE, SERVER_PORT,
-         SPRING_GRPC_SERVER_PORT, DB_*, REDIS_*, KAFKA_*, LIS_GRPC_MESSAGE_RECEIVER_*,
-         KC_*, PRINT_TRANSPORT, ZEBRA_*).
-{{- else }}
-Config:  chart-managed ConfigMap + Secret (profile {{ .Values.springProfile }})
-{{- end }}
+Chart:  {{ .Chart.Name }}-{{ .Chart.Version }}  (app {{ .Chart.AppVersion }})
+Config: the app sources its entire environment from the pre-existing Secret
+        "{{ .Values.envSecret }}" (envFrom). Ensure it exists and contains every
+        expected key: SPRING_PROFILES_ACTIVE, SERVER_PORT, SPRING_GRPC_SERVER_PORT,
+        DB_*, REDIS_*, KAFKA_*, KC_*, LIS_GRPC_MESSAGE_RECEIVER_*, PRINT_TRANSPORT,
+        ZEBRA_*.
 
 Dependencies:
-  PostgreSQL: {{ if .Values.postgresql.enabled }}bundled, persistent ({{ .Values.postgresql.persistence.size }}) at {{ include "lis-chart.databaseHost" . }}:{{ include "lis-chart.databasePort" . }}{{ else }}external — {{ .Values.externalDatabase.host }}:{{ .Values.externalDatabase.port }}{{ end }}
-  Redis:      {{ if .Values.redis.enabled }}bundled, ephemeral (no persistence) at {{ include "lis-chart.redisHost" . }}:{{ include "lis-chart.redisPort" . }}{{ else }}external — {{ .Values.externalRedis.host }}:{{ .Values.externalRedis.port }}{{ end }}
-  Kafka:      external — {{ .Values.kafka.bootstrapServers }}
+  PostgreSQL: {{ if .Values.postgresql.enabled }}bundled (Deployment + PVC{{ if .Values.postgresql.persistence.enabled }}, {{ .Values.postgresql.persistence.size }}{{ else }}, ephemeral{{ end }}) at {{ include "lis-chart.postgresql.fullname" . }}:{{ .Values.postgresql.service.port }}{{ else }}external (configure DB_HOST/DB_PORT via {{ .Values.envSecret }}){{ end }}
+  Redis:      {{ if .Values.redis.enabled }}bundled, ephemeral (no persistence) at {{ include "lis-chart.redis.fullname" . }}:{{ .Values.redis.service.port }}{{ else }}external (configure REDIS_HOST/REDIS_PORT via {{ .Values.envSecret }}){{ end }}
+  Kafka:      external (configure KAFKA_* via {{ .Values.envSecret }})
 
 1. Check rollout status:
    kubectl --namespace {{ .Release.Namespace }} rollout status deployment/{{ include "lis-chart.fullname" . }}
@@ -37,9 +34,3 @@ Dependencies:
 
 3. Run the smoke test:
    helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}
-{{- if not .Values.secrets.existingSecret }}
-
-WARNING: this release generated a Secret from default values in `secrets.data`.
-Override DB_PASSWORD / REDIS_PASSWORD / KAFKA_JAAS_CONFIG (or point
-`secrets.existingSecret` at a managed Secret) before using this in production.
-{{- end }}
