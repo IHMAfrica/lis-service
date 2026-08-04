@@ -8,8 +8,8 @@ metadata:
     "helm.sh/hook": test
 spec:
   containers:
-    - name: health
+    - name: wget
       image: busybox
       command: ['wget']
-      args: ['--spider', '-S', 'http://{{ include "lis-chart.fullname" . }}:{{ .Values.service.port }}/actuator/health']
+      args: ['{{ include "lis-chart.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never

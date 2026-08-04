@@ -1,0 +1,133 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lis-chart.fullname" . }}-postgresql
+  labels:
+    {{- include "lis-chart.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "lis-chart.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgresql
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "lis-chart.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgresql
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "lis-chart.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: postgresql
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.version }}"
+          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lis-credentials
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lis-credentials
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: lis-credentials
+                  key: DB_NAME
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: DEBEZIUM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lis-credentials
+                  key: DEBEZIUM_PASSWORD
+                  optional: true
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          args:
+            - -c
+            - config_file=/var/lib/postgresql/data/pgdata/postgresql.conf
+            - -c
+            - hba_file=/var/lib/postgresql/data/pgdata/pg_hba.conf
+          volumeMounts:
+            - name: postgresql-initdir
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgresql-initdir
+          projected:
+            defaultMode: 0755
+            sources:
+              - configMap:
+                  name: {{ include "lis-chart.fullname" . }}-postgresql-init
+                  items:
+                    - key: 01-setup-configs.sh
+                      path: 01-setup-configs.sh
+                      mode: 0755
+                    - key: 02-create-debezium-user.sh
+                      path: 02-create-debezium-user.sh
+                      mode: 0755
+              - configMap:
+                  name: {{ include "lis-chart.fullname" . }}-postgresql-config
+                  items:
+                    - key: postgresql-custom.conf
+                      path: postgresql-custom.conf
+                      mode: 0644
+              - configMap:
+                  name: {{ include "lis-chart.fullname" . }}-pghba-config
+                  items:
+                    - key: pg_hba-custom.conf
+                      path: pg_hba-custom.conf
+                      mode: 0644
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: {{ include "lis-chart.fullname" . }}-postgresql-pvc
+{{- end }}

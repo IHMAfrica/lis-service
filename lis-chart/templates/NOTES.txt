@@ -1,36 +1,35 @@
-{{ include "lis-chart.fullname" . }} has been deployed. 🎉
+1. Get the application URL by running these commands:
+{{- if .Values.httpRoute.enabled }}
+{{- if .Values.httpRoute.hostnames }}
+    export APP_HOSTNAME={{ .Values.httpRoute.hostnames | first }}
+{{- else }}
+    export APP_HOSTNAME=$(kubectl get --namespace {{(first .Values.httpRoute.parentRefs).namespace | default .Release.Namespace }} gateway/{{ (first .Values.httpRoute.parentRefs).name }} -o jsonpath="{.spec.listeners[0].hostname}")
+  {{- end }}
+{{- if and .Values.httpRoute.rules (first .Values.httpRoute.rules).matches (first (first .Values.httpRoute.rules).matches).path.value }}
+    echo "Visit http://$APP_HOSTNAME{{ (first (first .Values.httpRoute.rules).matches).path.value }} to use your application"
 
-Chart:  {{ .Chart.Name }}-{{ .Chart.Version }}  (app {{ .Chart.AppVersion }})
-Config: the app sources its entire environment from the pre-existing Secret
-        "{{ .Values.envSecret }}" (envFrom). Ensure it exists and contains every
-        expected key: SPRING_PROFILES_ACTIVE, SERVER_PORT, SPRING_GRPC_SERVER_PORT,
-        DB_*, REDIS_*, KAFKA_*, KC_*, LIS_GRPC_MESSAGE_RECEIVER_*, PRINT_TRANSPORT,
-        ZEBRA_*.
-
-Dependencies:
-  PostgreSQL: {{ if .Values.postgresql.enabled }}bundled (Deployment + PVC{{ if .Values.postgresql.persistence.enabled }}, {{ .Values.postgresql.persistence.size }}{{ else }}, ephemeral{{ end }}) at {{ include "lis-chart.postgresql.fullname" . }}:{{ .Values.postgresql.service.port }}{{ else }}external (configure DB_HOST/DB_PORT via {{ .Values.envSecret }}){{ end }}
-  Redis:      {{ if .Values.redis.enabled }}bundled, ephemeral (no persistence) at {{ include "lis-chart.redis.fullname" . }}:{{ .Values.redis.service.port }}{{ else }}external (configure REDIS_HOST/REDIS_PORT via {{ .Values.envSecret }}){{ end }}
-  Kafka:      external (configure KAFKA_* via {{ .Values.envSecret }})
-
-1. Check rollout status:
-   kubectl --namespace {{ .Release.Namespace }} rollout status deployment/{{ include "lis-chart.fullname" . }}
-
-2. Reach the REST API + actuator:
-{{- if .Values.ingress.enabled }}
+    NOTE: Your HTTPRoute depends on the listener configuration of your gateway and your HTTPRoute rules.
+    The rules can be set for path, method, header and query parameters.
+    You can check the gateway configuration with 'kubectl get --namespace {{(first .Values.httpRoute.parentRefs).namespace | default .Release.Namespace }} gateway/{{ (first .Values.httpRoute.parentRefs).name }} -o yaml'
+{{- end }}
+{{- else if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}
-   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
-{{- else if .Values.httpRoute.enabled }}
-   Via the Gateway API HTTPRoute host(s): {{ join ", " .Values.httpRoute.hostnames }}
-{{- else }}
-   The Service is {{ .Values.service.type }}. Port-forward to reach it locally:
-
-   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "lis-chart.fullname" . }} 8080:{{ .Values.service.port }}
-   # then: curl http://127.0.0.1:8080/actuator/health
-   #       open  http://127.0.0.1:8080/swagger-ui.html
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "lis-chart.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch its status by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "lis-chart.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "lis-chart.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "lis-chart.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
-
-3. Run the smoke test:
-   helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

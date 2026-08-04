@@ -2,8 +2,3 @@ defaultNamespace: lis
 helm:
   releaseName: lis
   chart: ./lis-chart
-  values:
-    image:
-      repository: ghcr.io/ihmafrica/lis-service
-      pullSecrets:
-        - name: ghcr-login

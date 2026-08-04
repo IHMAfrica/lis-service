@@ -3,21 +3,11 @@ replicaCount: 1
 image:
   repository: ghcr.io/ihmafrica/lis-service
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-# -----------------------------------------------------------------------------
-# Application (LIS) container
-# -----------------------------------------------------------------------------
-# Ports the container listens on. `http` serves the REST API + actuator; `grpc`
-# is the inbound spring-grpc server that receives lab orders / DISA logs.
-ports:
-  http: 8089
-  grpc: 9090
 
 serviceAccount:
   create: true
@@ -28,149 +18,103 @@ serviceAccount:
 podAnnotations: {}
 podLabels: {}
 
-# Hardened defaults — the app runs as a non-root user on a read-only root fs.
-podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
-  seccompProfile:
-    type: RuntimeDefault
+podSecurityContext: {}
 
-securityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
-  capabilities:
-    drop:
-      - ALL
+securityContext: {}
 
 service:
   type: ClusterIP
-  # Port the Service exposes for the REST API (targets the container `http` port).
   port: 80
-  # Port the Service exposes for the inbound gRPC server.
-  grpcPort: 9090
+  targetPort: 8080
 
 ingress:
   enabled: false
   className: ""
   annotations: {}
   hosts:
-    - host: lis.local
+    - host: chart-example.local
       paths:
         - path: /
-          pathType: Prefix
+          pathType: ImplementationSpecific
   tls: []
 
 httpRoute:
   enabled: false
   annotations: {}
-  parentRefs:
-    - name: gateway
-      sectionName: http
-  hostnames:
-    - lis.local
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /
+  parentRefs: []
+  hostnames: []
+  rules: []
 
-# Sensible production defaults; tune per environment.
-resources:
-  limits:
-    cpu: "1"
-    memory: 1Gi
-  requests:
-    cpu: 250m
-    memory: 512Mi
+resources: {}
 
-# Probes hit Spring Boot Actuator health groups. `startupProbe` gives the JVM +
-# Flyway migrations time to come up before liveness/readiness begin.
-startupProbe:
-  httpGet:
-    path: /actuator/health/readiness
-    port: http
-  failureThreshold: 30
-  periodSeconds: 5
 livenessProbe:
-  httpGet:
-    path: /actuator/health/liveness
-    port: http
-  initialDelaySeconds: 0
-  periodSeconds: 15
-  timeoutSeconds: 3
-  failureThreshold: 3
-readinessProbe:
-  httpGet:
-    path: /actuator/health/readiness
-    port: http
-  initialDelaySeconds: 0
+  enabled: true
+  initialDelaySeconds: 60
   periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
+
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 30
 
 autoscaling:
   enabled: false
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 75
-  # targetMemoryUtilizationPercentage: 80
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
 
-# The app writes only to /tmp (read-only root fs); an emptyDir covers it. Add more
-# via `volumes` / `volumeMounts`.
 volumes: []
+
 volumeMounts: []
 
 nodeSelector: {}
+
 tolerations: []
+
 affinity: {}
-
-envSecret: "lis-credentials"
-
-extraEnv: []
 
 postgresql:
   enabled: true
   image:
     repository: postgres
-    tag: "16-alpine"
+    version: "17-alpine"
     pullPolicy: IfNotPresent
-  auth:
-    database: lis_db
-    username: lis_user
-    # Password comes from the app Secret's DB_PASSWORD key (single source of truth).
   service:
     port: 5432
   persistence:
     enabled: true
-    storageClass: ""
-    accessModes:
-      - ReadWriteOnce
     size: 10Gi
-  resources:
-    limits:
-      cpu: "1"
-      memory: 1Gi
-    requests:
-      cpu: 250m
-      memory: 256Mi
+    storageClass: ""
 
 redis:
   enabled: true
   image:
     repository: redis
-    tag: "7-alpine"
+    version: "7-alpine"
     pullPolicy: IfNotPresent
-  # Require a password (taken from the app Secret's REDIS_PASSWORD key).
-  auth:
-    enabled: true
   service:
     port: 6379
+  auth:
+    enabled: true
+  persistence:
+    enabled: false
+    size: 1Gi
+    storageClass: ""
   resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
     requests:
       cpu: 100m
       memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
