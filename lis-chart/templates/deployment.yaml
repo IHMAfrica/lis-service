@@ -13,17 +13,6 @@ spec:
       {{- include "lis-chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- if or .Values.podAnnotations .Values.metrics.annotations.enabled }}
-      annotations:
-        {{- if .Values.metrics.annotations.enabled }}
-        prometheus.io/scrape: "true"
-        prometheus.io/path: {{ .Values.metrics.path | quote }}
-        prometheus.io/port: {{ .Values.metrics.port | quote }}
-        {{- end }}
-        {{- with .Values.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-      {{- end }}
       labels:
         {{- include "lis-chart.labels" . | nindent 8 }}
           {{- with .Values.podLabels }}
