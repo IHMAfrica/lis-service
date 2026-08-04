@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/ihmafrica/lis-service
-  pullPolicy: always
+  pullPolicy: Always
   tag: ""
 
 imagePullSecrets: []
